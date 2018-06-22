@@ -53,10 +53,11 @@ class CommunityStorePayrexxPaymentMethod extends StorePaymentMethod
 
     public function redirectForm()
     {
-        $gateway = $this->getGatewayURL();
+        $order = StoreOrder::getByID(Session::get('orderID'));
+        $gateway = $this->getGatewayURL($order);
 
-        if ($gateway) {
-            $order = StoreOrder::getByID(Session::get('orderID'));
+        if ($gateway && $order) {
+
             $order->setTransactionReference($gateway['reference_id']);
             $order->save();
 
@@ -79,7 +80,7 @@ class CommunityStorePayrexxPaymentMethod extends StorePaymentMethod
         $this->set('pmID', $pmID);
     }
 
-    private static function getGatewayURL()
+    private static function getGatewayURL($order)
     {
         $instanceName = Config::get('community_store_payrexx.instanceName');
         $secret = Config::get('community_store_payrexx.secret');
@@ -90,7 +91,7 @@ class CommunityStorePayrexxPaymentMethod extends StorePaymentMethod
         $gateway = new \Payrexx\Models\Request\Gateway();
 
         // amount multiplied by 100
-        $gateway->setAmount(number_format(StoreCalculator::getGrandTotal(), 2, '.', '') * 100);
+        $gateway->setAmount(number_format($order->getTotal(), 2, '.', '') * 100);
 
         // currency ISO code
         $gateway->setCurrency($currency);
