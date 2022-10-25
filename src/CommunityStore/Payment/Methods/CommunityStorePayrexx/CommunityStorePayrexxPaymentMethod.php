@@ -61,16 +61,19 @@ class CommunityStorePayrexxPaymentMethod extends StorePaymentMethod
             $order->setTransactionReference($gateway['reference_id']);
             $order->save();
 
-            $this->redirect($gateway['link']);
+            $response = new \Concrete\Core\Routing\RedirectResponse($gateway['link']);
+            $response->send();
+            exit;
+
         } else {
-            $this->redirect('/checkout/failed#payment');
+            return \Concrete\Core\Routing\Redirect::to('/checkout/failed#payment');
         }
     }
 
     public static function validateCompletion()
     {
         // if we get to this function, we returned from payrexx after a payment
-        self::redirect('/checkout/complete');
+        return \Concrete\Core\Routing\Redirect::to('/checkout/complete');
 
     }
 
